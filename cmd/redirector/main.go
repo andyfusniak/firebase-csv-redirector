@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 	"text/template"
 )
 
@@ -39,7 +40,7 @@ func run(filename string) error {
 	}
 
 	for _, record := range records {
-		directive, err := firebaseRedirect(record[0], record[1])
+		directive, err := firebaseRedirect("https://example.com", record[0], record[1])
 		if err != nil {
 			return err
 		}
@@ -58,11 +59,14 @@ const t1 = `{
 
 var tmpl = template.Must(template.New("t1").Parse(t1))
 
-func firebaseRedirect(src, dst string) (string, error) {
+func firebaseRedirect(prefix, src, dst string) (string, error) {
 	tp := struct {
 		Src string
 		Dst string
-	}{Src: src, Dst: dst}
+	}{
+		Src: strings.TrimPrefix(src, prefix),
+		Dst: dst,
+	}
 
 	buf := new(bytes.Buffer)
 	if err := tmpl.ExecuteTemplate(buf, "t1", tp); err != nil {
